@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_weather/widgets/gradient_container.dart';
 
 import 'package:flutter_weather/widgets/widgets.dart';
 import 'package:flutter_weather/blocs/blocs.dart';
@@ -27,7 +28,14 @@ class Weather extends StatelessWidget {
         )
       ]),
       body: Center(
-        child: BlocBuilder<WeatherBloc, WeatherState>(
+        child: BlocConsumer<WeatherBloc, WeatherState>(
+          listener: (context, state) {
+            if (state is WeatherLoaded) {
+              BlocProvider.of<ThemeBloc>(context).add(
+                WeatherChanged(condition: state.weather.condition),
+              );
+            }
+          },
           builder: (context, state) {
             if (state is WeatherEmpty) {
               return Center(child: Text('Please Select a Location'));
@@ -40,24 +48,30 @@ class Weather extends StatelessWidget {
             if (state is WeatherLoaded) {
               final weather = state.weather;
 
-              return ListView(
-                children: <Widget>[
-                  Padding(
-                      padding: EdgeInsets.only(top: 100.0),
-                      child:
-                          Center(child: Location(location: weather.location))),
-                  Center(
-                    child: LastUpdated(dateTime: weather.lastUpdated),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 50.0),
-                    child: Center(
-                      child: CombinedWeatherTemperature(
-                        weather: weather,
-                      ),
-                    ),
-                  ),
-                ],
+              return BlocBuilder<ThemeBloc, ThemeState>(
+                builder: (context, themeState) {
+                  return GradientContainer(
+                      color: themeState.color,
+                      child: ListView(
+                        children: <Widget>[
+                          Padding(
+                              padding: EdgeInsets.only(top: 100.0),
+                              child: Center(
+                                  child: Location(location: weather.location))),
+                          Center(
+                            child: LastUpdated(dateTime: weather.lastUpdated),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 50.0),
+                            child: Center(
+                              child: CombinedWeatherTemperature(
+                                weather: weather,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ));
+                },
               );
             }
             if (state is WeatherError) {
