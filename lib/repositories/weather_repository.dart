@@ -15,7 +15,6 @@ class WeatherRepository {
   ///
   /// Fetch the weather for the provided [city] name.
   Future<Weather> getWeather(String city) async {
-    // TODO: these methods throw exceptions, what do we do with them?
     final locationId = await this.weatherApiClient.getLocationId(city);
     return await this.weatherApiClient.fetchWeather(locationId);
   }
